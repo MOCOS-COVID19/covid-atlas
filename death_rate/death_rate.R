@@ -5,7 +5,9 @@ library(rjson)
 
 # Load data
 
-covid <- data.frame(readxl::read_xlsx("Zejscie_data_Adam.xlsx"))
+data_source <- "Zejscie_data_Adam.xlsx"
+data_source <- "~/Dropbox/__smiertelnosc_co_id__/dane_2020_07_01/Zejscie_data.xlsx"
+covid <- data.frame(readxl::read_xlsx(data_source))
 
 # Demographical data source: http://demografia.stat.gov.pl/bazademografia/
 
@@ -14,7 +16,7 @@ gus_population <- data.frame(readxl::read_xlsx("gus_population.xlsx"))
 
 colnames(gus_population) <- c("age","male_pop","female_pop")
 
-if(nrow(filter(covid, Wiek>100))>0){
+if(nrow(dplyr::filter(covid, Wiek>100))>0){
   covid[covid$Wiek>100,]$Wiek <- 100
 }
 
@@ -89,4 +91,6 @@ plot_dat %>%
   DALEX::theme_drwhy() +
   theme(legend.position="bottom", legend.direction = "vertical",
         legend.key.width = unit(2,"line"), legend.text = element_text(colour = "blue"),
-        legend.title = element_text(colour = "blue"))
+        legend.title = element_text(colour = "blue")) -> plmort
+
+ggsave("death_rate_2020_07_01.png", plmort, width = 10, height = 8)
