@@ -29,7 +29,8 @@ live_deceased <- live_data_source$deceased
 
 # Multiplier to adjust known cases for live numbers
 
-known_deceased <- (covid %>% filter(Zejście.choroby=="Zgon z powodu zgłoszonej choroby") %>% count())$n
+#known_deceased <- (covid %>% filter(grepl(`Zejście.choroby`, pattern = "zgon")) %>% count())$n
+known_deceased <- sum(grepl(covid$`Zejście.choroby`, pattern = "zgon", ignore.case = TRUE))
 multiplier <- live_deceased/known_deceased
 
 # Covid death rate calculation for only infected and all residents
@@ -37,7 +38,7 @@ multiplier <- live_deceased/known_deceased
 covid_male <- covid %>% filter(Płeć == "Mężczyzna")
 covid_female <- covid %>% filter(Płeć == "Kobieta")
 
-covid_male_ratio <- data.frame(covid_male %>% 
+covid_male_ratio <- covid_male %>% 
                               group_by(Wiek, Zejście.choroby) %>% 
                               summarise(N = n()) %>% 
                               group_by(Wiek) %>% 
@@ -45,9 +46,10 @@ covid_male_ratio <- data.frame(covid_male %>%
                                      Ratio = round(N/Total, 10),
                                      Sex = "Male",
                                      Type = "covid_ill") %>%
-                              filter(Zejście.choroby=="Zgon z powodu zgłoszonej choroby"))
+                              filter(grepl(covid$`Zejście.choroby`, pattern = "zgon", ignore.case = TRUE)) %>%
+                                data.frame
 
-covid_female_ratio <- data.frame(covid_female %>% 
+covid_female_ratio <- covid_female %>% 
                                  group_by(Wiek, Zejście.choroby) %>% 
                                  summarise(N = n()) %>% 
                                  group_by(Wiek) %>% 
@@ -55,8 +57,9 @@ covid_female_ratio <- data.frame(covid_female %>%
                                         Ratio = round(N/Total, 10),
                                         Sex = "Female",
                                         Type = "covid_ill") %>%
-                                 filter(Zejście.choroby=="Zgon z powodu zgłoszonej choroby"))
-
+                                   filter(grepl(covid$`Zejście.choroby`, pattern = "zgon", ignore.case = TRUE)) %>%
+                                   data.frame
+                                 
 
 covid_ratio_ill <- rbind(covid_male_ratio, covid_female_ratio)
 covid_ratio_ill <- select(covid_ratio_ill, c(age=Wiek,death_prob=Ratio,sex=Sex, total_deaths = N, type=Type))
