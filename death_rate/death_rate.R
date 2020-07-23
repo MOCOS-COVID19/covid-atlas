@@ -9,8 +9,9 @@ library(scales)
 
 
 # Load data
-
-covid <- data.frame(readxl::read_xlsx("Zejscie_data_Adam.xlsx"))
+path <- "Zejscie_data_Adam.xlsx"
+path <- "~/Dropbox/__smiertelnosc_co_id__/dane_2020_07_01/Zejscie_data.xlsx"
+covid <- data.frame(readxl::read_xlsx(path))
 
 # Demographical data source: http://demografia.stat.gov.pl/bazademografia/
 
@@ -107,7 +108,7 @@ plot_dat %>%
   DALEX::theme_drwhy() +
   theme(legend.position="bottom", legend.direction = "vertical",
         legend.key.width = unit(2.3,"line"), legend.text = element_text(colour = "blue"),
-        legend.title = element_text(colour = "blue"))
+        legend.title = element_text(colour = "blue")) -> plmort
 
 ggsave("death_rate_2020_07_01a.png", plmort, width = 10, height = 8)
 
@@ -159,7 +160,7 @@ plot_dat2 %>%
   DALEX::theme_drwhy() +
   theme(legend.position="bottom", legend.direction = "vertical",
         legend.key.width = unit(2,"line"), legend.text = element_text(colour = "blue"),
-        legend.title = element_text(colour = "blue"))
+        legend.title = element_text(colour = "blue")) -> plmort
 
 ggsave("death_rate_2020_07_01b.png", plmort, width = 10, height = 8)
 
@@ -216,6 +217,6 @@ ggplot(data = plot_dat3, aes(x=age, y=death_prob)) +
   DALEX::theme_drwhy() +
   theme(legend.position="bottom", legend.direction = "vertical",
         legend.text = element_text(colour = "blue"),
-        legend.title = element_text(colour = "blue"))
+        legend.title = element_text(colour = "blue")) -> plmort
 
 ggsave("death_rate_2020_07_01c.png", plmort, width = 10, height = 8)
