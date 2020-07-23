@@ -32,7 +32,8 @@ live_deceased <- live_data_source$deceased
 
 # Multiplier to adjust known cases for live numbers
 
-known_deceased <- (covid %>% filter(Zejście.choroby=="Zgon z powodu zgłoszonej choroby") %>% count())$n
+#known_deceased <- (covid %>% filter(Zejście.choroby=="Zgon z powodu zgłoszonej choroby") %>% count())$n
+known_deceased <- sum(grepl(covid$`Zejście.choroby`, pattern = "zgon", ignore.case = TRUE))
 multiplier <- live_deceased/known_deceased
 
 # Covid death rate calculation for only infected and all residents
@@ -40,7 +41,7 @@ multiplier <- live_deceased/known_deceased
 covid_male <- covid %>% filter(Płeć == "Mężczyzna")
 covid_female <- covid %>% filter(Płeć == "Kobieta")
 
-covid_male_ratio <- data.frame(covid_male %>% 
+covid_male_ratio <- covid_male %>% 
                               group_by(Wiek, Zejście.choroby) %>% 
                               summarise(N = n()) %>% 
                               group_by(Wiek) %>% 
@@ -48,9 +49,10 @@ covid_male_ratio <- data.frame(covid_male %>%
                                      Ratio = round(N/Total, 10),
                                      Sex = "Male",
                                      Type = "covid_ill") %>%
-                              filter(Zejście.choroby=="Zgon z powodu zgłoszonej choroby"))
+                              filter(grepl(Zejście.choroby, pattern = "zgon", ignore.case = TRUE)) %>%
+                              data.frame
 
-covid_female_ratio <- data.frame(covid_female %>% 
+covid_female_ratio <- covid_female %>% 
                                  group_by(Wiek, Zejście.choroby) %>% 
                                  summarise(N = n()) %>% 
                                  group_by(Wiek) %>% 
@@ -58,7 +60,8 @@ covid_female_ratio <- data.frame(covid_female %>%
                                         Ratio = round(N/Total, 10),
                                         Sex = "Female",
                                         Type = "covid_ill") %>%
-                                 filter(Zejście.choroby=="Zgon z powodu zgłoszonej choroby"))
+                                 filter(grepl(Zejście.choroby, pattern = "zgon", ignore.case = TRUE)) %>%
+                                 data.frame
 
 
 covid_ratio_ill <- rbind(covid_male_ratio, covid_female_ratio)
@@ -106,6 +109,8 @@ plot_dat %>%
         legend.key.width = unit(2.3,"line"), legend.text = element_text(colour = "blue"),
         legend.title = element_text(colour = "blue"))
 
+ggsave("death_rate_2020_07_01a.png", plmort, width = 10, height = 8)
+
 
   
 # Logistic Regression model based on known Covid cases
@@ -117,7 +122,7 @@ logit2prob <- function(logit){
 }  
 
 covid_mod <- covid %>% select(Zejście.choroby, Wiek, Płeć) %>%
-             transmute(Survived = ifelse(Zejście.choroby=="Zgon z powodu zgłoszonej choroby" & !is.na(Zejście.choroby),0,1),
+             transmute(Survived = ifelse(grepl(Zejście.choroby, pattern = "zgon", ignore.case = TRUE) & !is.na(Zejście.choroby),0,1),
              Age=Wiek,
              Sex=ifelse(Płeć=="Mężczyzna","Male","Female"))
   
@@ -156,7 +161,7 @@ plot_dat2 %>%
         legend.key.width = unit(2,"line"), legend.text = element_text(colour = "blue"),
         legend.title = element_text(colour = "blue"))
 
-
+ggsave("death_rate_2020_07_01b.png", plmort, width = 10, height = 8)
 
 # Creating splines for raw data
 
@@ -213,3 +218,4 @@ ggplot(data = plot_dat3, aes(x=age, y=death_prob)) +
         legend.text = element_text(colour = "blue"),
         legend.title = element_text(colour = "blue"))
 
+ggsave("death_rate_2020_07_01c.png", plmort, width = 10, height = 8)
