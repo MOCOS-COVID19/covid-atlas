@@ -123,6 +123,7 @@ ggsave("death_rate_2020_07_01a.png", plmort, width = 10, height = 8)
 deceased_all <- covid %>% select(age=Wiek, Płeć) %>% tidyr::gather(Płeć, age) %>%
                 dplyr::group_by(Płeć, age) %>% dplyr::count() %>% ungroup %>%
                 tidyr::spread(Płeć, n) %>% data.frame
+deceased_all <- deceased_all[,1:3]
 colnames(deceased_all) <- c("age", "covid_male_pop", "covid_female_pop")
 
 deceased_all <- merge(gus_population, deceased_all, all.x = TRUE)
@@ -150,7 +151,7 @@ Sex <- covid_mod$Sex
   
 ddist <- datadist(Age, Sex)
 options(datadist='ddist')
-model <- lrm(Survived ~ rcs(Age) * Sex, data = covid_mod)  
+model <- lrm(Survived ~ rcs(Age,3) * Sex, data = covid_mod)  
 # model <- lrm(Survived ~ rcs(Age) + Sex, data = covid_mod)  
 results <- Predict(model, Age, Sex)
 
@@ -189,6 +190,8 @@ plot_dat2 %>%
   theme(legend.position="bottom", legend.direction = "vertical",
         legend.key.width = unit(2.5,"line"), legend.text = element_text(colour = "blue"),
         legend.title = element_text(colour = "blue")) -> plmort
+
+plmort <- plmort + coord_cartesian(xlim = c(0,100), ylim = c(10^-7,1))
 
 ggsave("death_rate_2020_07_01b.png", plmort, width = 10, height = 8)
 
