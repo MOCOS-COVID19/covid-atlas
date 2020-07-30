@@ -1,8 +1,8 @@
 library(shiny)
 library(r2d3)
 
-path <- "Zejscie_data_Adam.xlsx"
-# path <- "~/Dropbox/__smiertelnosc_co_id__/dane_2020_07_01/Zejscie_data.xlsx"
+# path <- "Zejscie_data_Adam.xlsx"
+path <- "~/Dropbox/__smiertelnosc_co_id__/dane_2020_07_01/Zejscie_data.xlsx"
 covid <- data.frame(readxl::read_xlsx(path))
 new_obs <- data.frame(Age=50, Sex="Male", Comorbidities="Yes") 
 
