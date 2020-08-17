@@ -1,0 +1,21 @@
+{
+  "languages": ["en", "pl"],
+  "translation": [
+      {"en": "Covid-19 risk score", "pl": "Ocena ryzyka dla zakażonych Covid-19"},
+      {"en": "Hello Shiny!", "pl": "Witaj Shiny!"},
+      {"en": "Age", "pl": "Wiek"},
+      {"en": "Gender", "pl": "Płeć"},
+      {
+        "en": "This is description of the plot.",
+        "pl": "To jest opis obrazka."
+      },
+      {
+        "en": "Histogram of x",
+        "pl": "Histogram x"
+      },
+      {
+        "en": "Frequency",
+        "pl": "Częstotliwość"
+      }
+    ]
+}
