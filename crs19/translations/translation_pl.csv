@@ -1,0 +1,34 @@
+en,pl
+Covid-19 risk calculator,Kalkulator ryzyka Covid-19
+About authors,O autorach
+MI² is a group of statisticians and data scientists.,MI² to grupa statystyków i analityków danych
+Mortality,Śmiertelność
+Hospitalization,Hospitalizacja
+Risk of hospitalization,Ryzyko hospitalizacji
+Variable attribution Break-Down plot,Wykres składowych Break-Down
+Age,Wiek
+Comorbidities,Inne choroby
+Sex,Płeć
+Month,Miesiąc
+Prediction,Prognoza
+Riscs are calculated for a ,Ryzyka wyznaczone są dla osoby w wieku 
+ year old , lat i płci 
+with comorbidities,z chorobami towarzyszącymi
+without comorbidities,bez chorób towarzyszących
+male,męskiej
+female,żeńskiej
+Male,Mężczyzna
+Female,Kobieta
+In case of infection,W przypadku zachorowania
+the death risk equals,ryzyko zgonu wynosi
+the hospitalization risk equals,ryzyko hospitalizacji wynosi
+More details about how the model works and how it was created,Więcej szczegółów o tym jak ten model działa i jak był zbudowany
+About the model,O modelu
+Your risks,Twoje ryzyka
+What influences the calculated mortality?,Co wpływa na wyliczoną śmiertelność?
+How does mortality depend on age?,Jak śmiertelność zależy od wieku?
+Model performance,Skuteczność modelu
+What influences the hospitalization risk?,Co wpływa na ryzyko hospitalizacji?
+How does the risk of hospitalization depend on age?,Jak ryzyko hospitalizacji zależy od wieku?
+Your risk,Twoje ryzyko
+About the CRS-19 model,O modelu CRS-19
