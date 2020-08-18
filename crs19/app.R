@@ -4,6 +4,7 @@ library(ggplot2)
 library(DALEX)
 library(shinydashboard)
 library(shiny.i18n)
+library(dplyr)
 
 theme_ema <- theme(text = element_text(color = "black", size = 12),
                    plot.title = element_text(color = "black", size = 14, hjust = 0), 
@@ -45,14 +46,16 @@ ui <- dashboardPage(
                   min = 1,
                   max = 100,
                   value = 30),
-      selectInput("sex",
-                  textOutput("input_name2"),
-                  c("Male"="Mężczyzna", "Female"="Kobieta"),
-                  selected = "Mężczyzna"),
-      selectInput("comorbidities",
-                  textOutput("input_name3"),
-                  c("Yes"="Tak", "No"="Nie"),
-                  selected = "Nie"),
+      uiOutput("input_sex"),
+      uiOutput("input_comorbidities"),
+      # selectInput("sex",
+      #             textOutput("input_name2"),
+      #             c("Mężczyzna", "Kobieta"),
+      #             selected = "Mężczyzna"),
+      # selectInput("comorbidities",
+      #             textOutput("input_name3"),
+      #             c("Yes"="Tak", "No"="Nie"),
+      #             selected = "Nie"),
 #      selectInput("infection",
 #                  i18n$t("Miesiąc zakażenia"),
 #                  c("March", "April", "May", "June"),
@@ -113,7 +116,7 @@ server <- function(input, output, session) {
       }
       translator
     })  
-  
+    
     new_obs_reactive <- reactive({
       new_obs <- data.frame('Płeć' = factor(input$sex, c("Kobieta", "Mężczyzna")),
                             'Wiek' = input$age,
@@ -141,9 +144,17 @@ server <- function(input, output, session) {
     output$bdPlot <- renderPlot({
       new_obs <- new_obs_reactive()
       
+      choiceVec1 <- c("Tak", "Nie") %>% stats::setNames(c(i18n()$t('Yes'), i18n()$t('No')))
+      choiceVec2 <- c("Mężczyzna", "Kobieta") %>% stats::setNames(c(i18n()$t('Male'), i18n()$t('Female')))
+      
       pp <- predict_parts(lrm_exp, new_obs, order = c("Wiek", "Inne.Choroby", "Płec", "Miesiąc"))
-      pp$variable <- c("Intercept",i18n()$t("Age"),i18n()$t("Comorbidities"),i18n()$t("Sex"),i18n()$t("Prediction"))
-      #pp$variable <- c("Intercept",i18n()$t("Age"),i18n()$t("Comorbidities"),i18n()$t("Prediction"))
+
+      pp$variable <- c(i18n()$t("Intercept"),
+                       paste0(i18n()$t("Age"), " = ", input$age),
+                       paste0(i18n()$t("Comorbidities"), " = ", names(choiceVec1)[choiceVec1 == input$comorbidities]),
+                       paste0(i18n()$t("Sex"), " = ", names(choiceVec2)[choiceVec2 == input$sex]),
+                       i18n()$t("Prediction"))
+      
       plot(pp) + facet_null() + ggtitle(i18n()$t("Variable attribution Break-Down plot")) +
         scale_y_continuous(i18n()$t("Mortality"), limits = c(0,max(pp$cumulative)*1.2), labels = scales::percent) +
         theme_ema
@@ -165,9 +176,17 @@ server <- function(input, output, session) {
     output$bdPlotHosp <- renderPlot({
       new_obs <- new_obs_reactive()
       
+      choiceVec1 <- c("Tak", "Nie") %>% stats::setNames(c(i18n()$t('Yes'), i18n()$t('No')))
+      choiceVec2 <- c("Mężczyzna", "Kobieta") %>% stats::setNames(c(i18n()$t('Male'), i18n()$t('Female')))
+      
       pp <- predict_parts(lrm_hosp, new_obs, order = c("Wiek", "Inne.Choroby", "Płec", "Miesiąc"))
-      pp$variable <- c("Intercept",i18n()$t("Age"),i18n()$t("Comorbidities"),i18n()$t("Sex"),i18n()$t("Prediction"))
-      #pp$variable <- c("Intercept",i18n()$t("Age"),i18n()$t("Comorbidities"),i18n()$t("Prediction"))
+      
+      pp$variable <- c(i18n()$t("Intercept"),
+                       paste0(i18n()$t("Age"), " = ", input$age),
+                       paste0(i18n()$t("Comorbidities"), " = ", names(choiceVec1)[choiceVec1 == input$comorbidities]),
+                       paste0(i18n()$t("Sex"), " = ", names(choiceVec2)[choiceVec2 == input$sex]),
+                       i18n()$t("Prediction"))
+      
       plot(pp) + facet_null() + ggtitle(i18n()$t("Variable attribution Break-Down plot")) +
         scale_y_continuous(i18n()$t("Risk of hospitalization"), limits = c(0,max(pp$cumulative)*1.2), labels = scales::percent) +
         theme_ema
@@ -261,6 +280,21 @@ server <- function(input, output, session) {
     
     output$input_name3 <- renderText({
       i18n()$t("Comorbidities")
+    })
+    
+    output$input_sex <- renderUI({
+      selectInput("sex",
+                  textOutput("input_name2"),
+                  c("Mężczyzna", "Kobieta") %>% stats::setNames(c(i18n()$t('Male'), i18n()$t('Female'))),
+                  selected = "Mężczyzna")
+      
+    })
+    
+    output$input_comorbidities <- renderUI({
+      selectInput("comorbidities",
+                  textOutput("input_name3"),
+                  c("Tak", "Nie") %>% stats::setNames(c(i18n()$t('Yes'), i18n()$t('No'))),
+                  selected = "Nie")
     })
     
 }
