@@ -4,6 +4,7 @@ library(ggplot2)
 library(DALEX)
 library(shinydashboard)
 library(shiny.i18n)
+library(shinycssloaders)
 library(dplyr)
 
 theme_ema <- theme(text = element_text(color = "black", size = 12),
@@ -16,19 +17,14 @@ theme_ema <- theme(text = element_text(color = "black", size = 12),
                    legend.text = element_text(color = "black", size = 12), 
                    strip.text = element_text(color = "black", size = 12, hjust = 0))
 
-#i18n <- Translator$new(translation_json_path = "translations/translation.json")
 
 translator <- Translator$new(translation_csvs_path = "translations/")
 
 lrm_exp <- readRDS("lrm_exp_test.rds")
 lrm_hosp <- readRDS("lrm_hosp_test.rds")
 
-# Define UI for application that draws a histogram
-
-
 ui <- dashboardPage(
   skin = "purple",
-  
   dashboardHeader(title = textOutput("title"),
                   dropdownMenuOutput("messageMenu"),
                   tags$li(class = "dropdown", 
@@ -60,7 +56,11 @@ ui <- dashboardPage(
 #                  i18n$t("Miesiąc zakażenia"),
 #                  c("March", "April", "May", "June"),
 #                  selected = "June"),
-      menuItem(textOutput("menu_name2"), tabName = "widgets", icon = icon("th"))
+      menuItem(textOutput("menu_name2"), tabName = "widgets", icon = icon("th")),
+      tags$style(type="text/css",
+                 ".shiny-output-error { visibility: hidden; }",
+                 ".shiny-output-error:before { visibility: hidden; }"
+      )
     )
   ),
   dashboardBody(
@@ -71,27 +71,27 @@ ui <- dashboardPage(
                 box(title = textOutput("tab_title1"),
                     background = "blue", solidHeader = TRUE,
                     collapsible = TRUE, width = 4,
-                    uiOutput("textPred")),
+                    uiOutput("textPred") %>% withSpinner(hide.ui = FALSE)),
                 box(title = textOutput("tab_title2"),
                     background = "yellow", solidHeader = TRUE,
                     collapsible = TRUE, width = 4,
-                    plotOutput("bdPlot", height = 300)),
+                    plotOutput("bdPlot", height = 300) %>% withSpinner(hide.ui = FALSE)),
                 box(title = textOutput("tab_title3"),
                     background = "yellow", solidHeader = TRUE,
                     collapsible = TRUE, width = 4,
-                    plotOutput("bdCeteriaParibus", height = 300)),
+                    plotOutput("bdCeteriaParibus", height = 300) %>% withSpinner(hide.ui = FALSE)),
                 box(title = textOutput("tab_title4"),
                     background = "blue", solidHeader = TRUE,
                     collapsible = TRUE, width = 4,
-                    plotOutput("bdROC", height = 300)),
+                    plotOutput("bdROC", height = 300) %>% withSpinner(hide.ui = FALSE)),
                 box(title = textOutput("tab_title5"),
                     background = "green", solidHeader = TRUE,
                     collapsible = TRUE, width = 4,
-                    plotOutput("bdPlotHosp", height = 300)),
+                    plotOutput("bdPlotHosp", height = 300)  %>% withSpinner(hide.ui = FALSE)),
                 box(title = textOutput("tab_title6"),
                     background = "green", solidHeader = TRUE,
                     collapsible = TRUE, width = 4,
-                    plotOutput("bdCeteriaParibusHosp", height = 300))
+                    plotOutput("bdCeteriaParibusHosp", height = 300) %>% withSpinner(hide.ui = FALSE))
               )
       ),
 
@@ -108,6 +108,7 @@ ui <- dashboardPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
+  
   
     i18n <- reactive({
       selected <- input$language
@@ -139,7 +140,6 @@ server <- function(input, output, session) {
       i18n()$t("In case of infection"), i18n()$t("the hospitalization risk equals"), strong(pred_hosp), "%")
     })
 
-    # i18n$set_translation_language(input$language)
     # plot
     output$bdPlot <- renderPlot({
       new_obs <- new_obs_reactive()
@@ -171,7 +171,6 @@ server <- function(input, output, session) {
         theme_ema
     })
     
-    # i18n$set_translation_language(input$language)
     # plot
     output$bdPlotHosp <- renderPlot({
       new_obs <- new_obs_reactive()
@@ -225,6 +224,8 @@ server <- function(input, output, session) {
                                href = "http://mi2.mini.pw.edu.pl/"
                    ))
     })
+    
+    
     
     output$title <- renderText({
       i18n()$t("Covid-19 risk calculator")
