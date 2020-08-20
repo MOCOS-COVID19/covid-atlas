@@ -5,6 +5,7 @@ library(DALEX)
 library(shinydashboard)
 library(shiny.i18n)
 library(shinycssloaders)
+library(shinyjs)
 library(dplyr)
 
 theme_ema <- theme(text = element_text(color = "black", size = 12),
@@ -25,38 +26,34 @@ lrm_hosp <- readRDS("lrm_hosp_test.rds")
 
 ui <- dashboardPage(
   skin = "purple",
-  dashboardHeader(title = textOutput("title"),
+  dashboardHeader(title = p(id = "title", "Kalkulator ryzyka Covid-19"),
                   dropdownMenuOutput("messageMenu"),
                   tags$li(class = "dropdown", 
                           radioButtons(inputId = "language",
                                        label = "",
                                        inline = TRUE,
                                        choices = c("Polski" = "pl", "English" = "en"),
-                                       selected = "en")
+                                       selected = "pl")
                   )),
   dashboardSidebar(
     sidebarMenu(
-      menuItem(textOutput("menu_name1"), tabName = "dashboard", icon = icon("dashboard")),
+      menuItem(#textOutput("menu_name1"),
+               p(id = "menu1", "Twoje ryzyko"),
+               tabName = "dashboard", icon = icon("dashboard")),
       sliderInput("age",
-                  textOutput("input_name1"),
+                  "Wiek",
                   min = 1,
                   max = 100,
                   value = 30),
-      uiOutput("input_sex"),
-      uiOutput("input_comorbidities"),
-      # selectInput("sex",
-      #             textOutput("input_name2"),
-      #             c("Mężczyzna", "Kobieta"),
-      #             selected = "Mężczyzna"),
-      # selectInput("comorbidities",
-      #             textOutput("input_name3"),
-      #             c("Yes"="Tak", "No"="Nie"),
-      #             selected = "Nie"),
-#      selectInput("infection",
-#                  i18n$t("Miesiąc zakażenia"),
-#                  c("March", "April", "May", "June"),
-#                  selected = "June"),
-      menuItem(textOutput("menu_name2"), tabName = "widgets", icon = icon("th")),
+      selectInput("sex",
+                  "Płeć",
+                  c("Mężczyzna", "Kobieta"),
+                  selected = "Mężczyzna"),
+      selectInput("comorbidities",
+                  "Inne choroby",
+                  c("Tak", "Nie"),
+                  selected = "Nie"),
+      menuItem(p(id = "menu2", "O modelu CRS-19"), tabName = "widgets", icon = icon("th")),
       tags$style(type="text/css",
                  ".shiny-output-error { visibility: hidden; }",
                  ".shiny-output-error:before { visibility: hidden; }"
@@ -64,31 +61,32 @@ ui <- dashboardPage(
     )
   ),
   dashboardBody(
+    useShinyjs(),
     tabItems(
       # First tab content
       tabItem(tabName = "dashboard",
               fluidRow(
-                box(title = textOutput("tab_title1"),
+                box(title = p(id = "tab1", "Twoje ryzyka"),
                     background = "blue", solidHeader = TRUE,
                     collapsible = TRUE, width = 4,
                     uiOutput("textPred") %>% withSpinner(hide.ui = FALSE)),
-                box(title = textOutput("tab_title2"),
+                box(title = p(id = "tab2", "Co wpływa na wyliczoną śmiertelność?"),
                     background = "yellow", solidHeader = TRUE,
                     collapsible = TRUE, width = 4,
                     plotOutput("bdPlot", height = 300) %>% withSpinner(hide.ui = FALSE)),
-                box(title = textOutput("tab_title3"),
+                box(title = p(id = "tab3", "Jak śmiertelność zależy od wieku?"),
                     background = "yellow", solidHeader = TRUE,
                     collapsible = TRUE, width = 4,
                     plotOutput("bdCeteriaParibus", height = 300) %>% withSpinner(hide.ui = FALSE)),
-                box(title = textOutput("tab_title4"),
+                box(title = p(id = "tab4", "Skuteczność modelu"),
                     background = "blue", solidHeader = TRUE,
                     collapsible = TRUE, width = 4,
                     plotOutput("bdROC", height = 300) %>% withSpinner(hide.ui = FALSE)),
-                box(title = textOutput("tab_title5"),
+                box(title = p(id = "tab5", "Co wpływa na ryzyko hospitalizacji?"),
                     background = "green", solidHeader = TRUE,
                     collapsible = TRUE, width = 4,
                     plotOutput("bdPlotHosp", height = 300)  %>% withSpinner(hide.ui = FALSE)),
-                box(title = textOutput("tab_title6"),
+                box(title = p(id = "tab6", "Jak ryzyko hospitalizacji zależy od wieku?"),
                     background = "green", solidHeader = TRUE,
                     collapsible = TRUE, width = 4,
                     plotOutput("bdCeteriaParibusHosp", height = 300) %>% withSpinner(hide.ui = FALSE))
@@ -97,8 +95,8 @@ ui <- dashboardPage(
 
       # Second tab content
       tabItem(tabName = "widgets",
-              h2(textOutput("widget_title")),
-              textOutput("widget_info")
+              p(id = "widget1", "O modelu"),
+              p(id = "widget2", "Więcej szczegółów o tym jak ten model działa i jak był zbudowany")
       )
     )
 
@@ -224,80 +222,28 @@ server <- function(input, output, session) {
                                href = "http://mi2.mini.pw.edu.pl/"
                    ))
     })
-    
-    
-    
-    output$title <- renderText({
-      i18n()$t("Covid-19 risk calculator")
+
+    observeEvent(input$language, {
+      updateSelectInput(session, "sex", i18n()$t("Sex"),
+                        c("Mężczyzna", "Kobieta") %>% stats::setNames(c(i18n()$t('Male'), i18n()$t('Female'))),
+                        selected = "Mężczyzna")
+        
+      updateSelectInput(session, "comorbidities", i18n()$t("Comorbidities"),
+                        c("Tak", "Nie") %>% stats::setNames(c(i18n()$t('Yes'), i18n()$t('No'))),
+                        selected = "Nie")
+      updateSliderInput(session, "age", i18n()$t("Age"))
+      html("title", i18n()$t("Covid-19 risk calculator"))
+      html("menu1", i18n()$t("Your risk"))
+      html("menu2", i18n()$t("About the CRS-19 model"))
+      html("widget1", i18n()$t("About the model"))
+      html("widget2", i18n()$t("More details about how the model works and how it was created"))
+      html("tab1", i18n()$t("Your risks"))
+      html("tab2", i18n()$t("What influences the calculated mortality?"))
+      html("tab3", i18n()$t("How does mortality depend on age?"))
+      html("tab4", i18n()$t("Model performance"))
+      html("tab5", i18n()$t("What influences the hospitalization risk?"))
+      html("tab6", i18n()$t("How does the risk of hospitalization depend on age?"))
     })
-    
-    output$tab_title1 <- renderText({
-      i18n()$t("Your risks")
-    })
-    
-    output$tab_title2 <- renderText({
-      i18n()$t("What influences the calculated mortality?")
-    })
-    
-    output$tab_title3 <- renderText({
-      i18n()$t("How does mortality depend on age?")
-    })
-    
-    output$tab_title4 <- renderText({
-      i18n()$t("Model performance")
-    })
-    
-    output$tab_title5 <- renderText({
-      i18n()$t("What influences the hospitalization risk?")
-    })
-    
-    output$tab_title6 <- renderText({
-      i18n()$t("How does the risk of hospitalization depend on age?")
-    })
-    
-    output$widget_title <- renderText({
-      i18n()$t("About the model")
-    })
-    
-    output$widget_info <- renderText({
-      i18n()$t("More details about how the model works and how it was created")
-    })
-    
-    output$menu_name1 <- renderText({
-      i18n()$t("Your risk")
-    })
-    
-    output$menu_name2 <- renderText({
-      i18n()$t("About the CRS-19 model")
-    })
-    
-    output$input_name1 <- renderText({
-      i18n()$t("Age")
-    })
-    
-    output$input_name2 <- renderText({
-      i18n()$t("Sex")
-    })
-    
-    output$input_name3 <- renderText({
-      i18n()$t("Comorbidities")
-    })
-    
-    output$input_sex <- renderUI({
-      selectInput("sex",
-                  textOutput("input_name2"),
-                  c("Mężczyzna", "Kobieta") %>% stats::setNames(c(i18n()$t('Male'), i18n()$t('Female'))),
-                  selected = "Mężczyzna")
-      
-    })
-    
-    output$input_comorbidities <- renderUI({
-      selectInput("comorbidities",
-                  textOutput("input_name3"),
-                  c("Tak", "Nie") %>% stats::setNames(c(i18n()$t('Yes'), i18n()$t('No'))),
-                  selected = "Nie")
-    })
-    
 }
 
 # Run the application 
